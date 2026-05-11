@@ -161,6 +161,33 @@ def test_build_path_object_from_parts_from_variable(mock_ipython_shell):
 
     pep_module.guarded_eval = original_guarded_eval
 
+def test_build_path_object_from_parts_from_attribute(mock_ipython_shell):
+
+    class Foo:
+        def __init__(self):
+            self.my_path = Path("/start/dir")
+
+    foo = Foo()
+    mock_ipython_shell.user_ns["foo"] = foo
+    code = "foo.my_path / 'next' / "
+    parts = extract_div_sequence(code)
+
+    original_guarded_eval = pep_module.guarded_eval
+
+    def side_effect_eval(code, context):
+        if code == "foo.my_path":
+            return foo.my_path
+        if code == "'next'":
+            return literal_eval(code)
+        return original_guarded_eval(code, context)
+
+    pep_module.guarded_eval = MagicMock(side_effect=side_effect_eval)
+
+    result = build_path_object_from_parts(parts)
+    assert result == foo.my_path / "next"
+
+    pep_module.guarded_eval = original_guarded_eval
+
 
 def test_build_path_object_from_parts_invalid_path_keyword(mock_ipython_shell):
     mock_ipython_shell.user_ns["Path"] = "not a path"

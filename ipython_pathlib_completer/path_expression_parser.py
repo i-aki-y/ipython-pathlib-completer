@@ -156,15 +156,27 @@ def build_path_object_from_parts(parts):
                         logger.debug("The first variable should be pathlib.Path object")
                         return None
                 elif part.type == "atom_expr":
-                    if not validate_pathlib_path_is_defined(shell):
-                        logger.debug("Path keyword is not pathlib.Path ")
-                        return None
                     x = extract_pathlib_path_string(part)
-                    x = guarded_eval(x, context)
-                    if not isinstance(x, str):
-                        logger.debug(f"Invalid Path constructor: {part}")
-                        return None
-                    x = Path(x)
+                    if x is not None:
+                        # It may be Path constructor
+                        if not validate_pathlib_path_is_defined(shell):
+                            logger.debug("Path keyword is not pathlib.Path ")
+                            return None
+                        x = guarded_eval(x, context)
+                        if not isinstance(x, str):
+                            logger.debug(f"Invalid Path constructor: {part}")
+                            return None
+                        x = Path(x)
+                    else:
+                        # It may be a valid Path attribute access, ex: parent.child.my_path.
+                        try:
+                            x = guarded_eval(part.get_code(), context)
+                        except:
+                            logger.debug(f"The following evaluation is not allowed in limited mode: {part.get_code}")
+                            return None
+                        if not isinstance(x, Path):
+                            logger.debug("The first variable should be pathlib.Path object")
+                            return None
                 else:
                     logger.debug("The first part should be pathlib.Path object")
                     return None
