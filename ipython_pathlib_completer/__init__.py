@@ -1,6 +1,6 @@
 """Top-level package"""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .path_expression_parser import *
 from .matcher import *
