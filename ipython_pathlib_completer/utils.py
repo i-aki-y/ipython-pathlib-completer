@@ -20,7 +20,7 @@ def enable_debug_log(log_file_path, format=None):
     logger_name = "ipython_pathlib_completer"
     handler = logging.FileHandler(filename=log_file_path, encoding="utf-8")
     handler.setFormatter(
-        logging.Formatter(format or "%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        logging.Formatter(format or "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d - %(message)s")
     )
     logger = logging.getLogger(logger_name)
 
